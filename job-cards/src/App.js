@@ -1,25 +1,45 @@
-import logo from './logo.svg';
-import './App.css';
+import logo from "./logo.svg";
+import JobCards from "./components/jobCards/jobCards";
+import { useEffect, useState } from "react";
+import JobList from "./components/jobLists/jobList";
 
 function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+  const [jobs, setJobs] = useState([]);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const myHeaders = new Headers();
+  myHeaders.append("Content-Type", "application/json");
+
+  const body = JSON.stringify({
+    limit: 10,
+    offset: 0,
+  });
+
+  const requestOptions = {
+    method: "POST",
+    headers: myHeaders,
+    body,
+  };
+
+  const fetchData = async () => {
+    try {
+      const response = await fetch(
+        "https://api.weekday.technology/adhoc/getSampleJdJSON",
+        requestOptions
+      );
+      const data = await response.json();
+      setJobs(data.jdList); // Assuming the response has a 'jobs' array
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return <div className="App">
+    <JobList jobs={jobs} />
+  </div>;
 }
 
 export default App;
