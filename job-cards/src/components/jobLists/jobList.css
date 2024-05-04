@@ -1,0 +1,14 @@
+.job-list {
+  display: flex;
+  flex-flow: wrap;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+  /* margin-top: -24px; */
+}
+
+/* @media (max-width: 800px) {
+    .flex-container {
+      flex-direction: column;
+    }
+  } */
