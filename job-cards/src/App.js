@@ -2,43 +2,75 @@ import logo from "./logo.svg";
 import JobCards from "./components/jobCards/jobCards";
 import { useEffect, useState } from "react";
 import JobList from "./components/jobLists/jobList";
+import FilterTabs from "./components/filterTabs/filtertabs";
+import { useDispatch,useSelector } from "react-redux";
+import { fetchJobsData } from "./features/jobData/jobDataSlice";
+import { CircularProgress, styled } from "@mui/material";
+import Box from "@mui/material/Box";
 
 function App() {
-  const [jobs, setJobs] = useState([]);
+  const dispatch = useDispatch()
+  const loading = useSelector((state) => state?.jobs.isLoading);
+  const state = useSelector((state) => state)
+  const [offset, setOffset] = useState(0);
+  const limit = 8;
+
+
+  const CircularLoading = () => (
+    <>
+      <CircularProgress
+        size={70}
+        sx={{
+          position: "fixed",
+          left: "50%",
+          top: "50%",
+          transform: "translate(-50%, -50%)",
+          zIndex: 2
+        }}
+      />
+
+    </>
+  );
 
   useEffect(() => {
-    fetchData();
-  }, []);
+    console.log("Fetching data...")
+    dispatch(fetchJobsData({offset,limit}))
+  }, [offset]);
 
-  const myHeaders = new Headers();
-  myHeaders.append("Content-Type", "application/json");
 
-  const body = JSON.stringify({
-    limit: 10,
-    offset: 0,
-  });
-
-  const requestOptions = {
-    method: "POST",
-    headers: myHeaders,
-    body,
-  };
-
-  const fetchData = async () => {
-    try {
-      const response = await fetch(
-        "https://api.weekday.technology/adhoc/getSampleJdJSON",
-        requestOptions
-      );
-      const data = await response.json();
-      setJobs(data.jdList); // Assuming the response has a 'jobs' array
-    } catch (error) {
-      console.error(error);
+  const handleScroll = () => {
+    console.log("Scrolled!");
+    const scrollTop = document.documentElement.scrollTop;
+    const windowHeight = window.innerHeight;
+    const documentHeight = document.documentElement.offsetHeight;
+    if (scrollTop + windowHeight >= documentHeight - 100 && !loading) {
+      setOffset((prevOffset) => prevOffset + limit);
     }
   };
 
-  return <div className="App">
-    <JobList jobs={jobs} />
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
+  if(loading){
+    return(
+      <div>
+        <CircularLoading />
+      </div>
+    )
+  }
+
+  return <div>
+    {/* <FilterTabs /> */}
+    {state?.jobs?.data && 
+    <JobList jobs={state?.jobs?.data} />
+  }
+  {loading&& <div>
+    <CircularLoading />
+    </div>}
   </div>;
 }
 
